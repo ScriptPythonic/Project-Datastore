@@ -72,7 +72,7 @@ const UploadPage = () => {
 
   const confirmLogout = () => {
     setShowOverlay(false);
-    navigate('/sign-up'); 
+    navigate('/signup'); 
   };
 
   const cancelLogout = () => {

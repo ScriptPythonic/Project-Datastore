@@ -8,6 +8,29 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Project from './project';
 
+const Overlay = ({ onConfirm, onCancel }) => (
+  <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+      <p className="text-lg font-medium mb-4">Are you sure you want to logout?</p>
+      <div className="flex justify-center space-x-4">
+        <button
+          onClick={onConfirm}
+          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-200"
+        >
+          Yes
+        </button>
+        <button
+          onClick={onCancel}
+          className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors duration-200"
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [searchInput, setSearchInput] = useState('');
