@@ -3,7 +3,6 @@ import Slider from 'react-slick';
 import { FaHome, FaUpload, FaSignOutAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Loader from './div_loader'; 
-import Overlay from './Overlay'; // Ensure this path is correct
 import { motion } from 'framer-motion';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
