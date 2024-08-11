@@ -2,12 +2,53 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <meta name="description" content="Final year project database for efficient student data management." />
+    <meta name="author" content="Scriptpythonic" />
+    <meta property="og:title" content="Student Data Management System" />
+    <meta property="og:description" content="A robust system designed for storing and managing student data efficiently for final year projects." />
+    <meta property="og:image" content="/path/to/your/image.jpg" />
+    <meta property="og:url" content="https://yourwebsite.com" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Student Data Management System" />
+    <meta name="twitter:description" content="A robust system for managing student data for final year projects." />
+    <meta name="twitter:image" content="/path/to/your/image.jpg" />
+
+    <title>Student Data Management System</title>
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+      body {
+        font-family: 'Open Sans', sans-serif;
+        background-color: #f4f7f6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root" class="flex flex-col items-center">
+      <h1 class="text-4xl font-semibold mb-4 text-gray-800">Welcome to the Student Data Management System</h1>
+      <p class="text-lg text-gray-600">Your final year project database for efficiently storing and managing student data.</p>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
