@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { FaHome, FaUpload, FaSignOutAlt , FaFilePdf} from 'react-icons/fa';
+import { FaHome, FaUpload, FaSignOutAlt, FaFilePdf } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-import Loader from './div_loader'; // Assuming this is a loader component
-import Project from './project'; // Assuming this is a component for recent projects
+import Project from './project'; 
+import { supabase } from '../supabaseClient';
 
 // Overlay Component
 const Overlay = ({ onConfirm, onCancel }) => (
@@ -38,7 +38,6 @@ const UploadPage = () => {
   const [showOverlay, setShowOverlay] = useState(false); // State for overlay visibility
   const [projectSummary, setProjectSummary] = useState('');
   const [studentName, setStudentName] = useState('');
-
   const navigate = useNavigate();
 
   const handleNavigation = (path, tabName) => {
@@ -50,29 +49,80 @@ const UploadPage = () => {
     setFile(e.target.files[0]);
   };
 
-  const handleUpload = () => {
-    if (file && studentName && projectSummary) {
-      setUploading(true);
-      // Simulate file upload
-      setTimeout(() => {
-        setUploading(false);
-        alert('File uploaded successfully!');
-        setFile(null);
-        setProjectSummary('');
-        setStudentName('');
-      }, 2000);
-    } else {
+  const handleUpload = async () => {
+    if (!file || !studentName || !projectSummary) {
       alert('Please fill in all fields and select a file.');
+      return;
     }
+
+    setUploading(true);
+
+    // Upload file to Supabase Storage
+    const { data: fileData, error: uploadError } = await supabase.storage
+      .from('scriptpythonic')
+      .upload(`uploads/${file.name}`, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      setUploading(false);
+      alert(uploadError.message);
+      return;
+    }
+
+    // Get public URL of the uploaded file
+    const { publicURL, error: urlError } = supabase.storage
+      .from('your-bucket-name')
+      .getPublicUrl(`uploads/${file.name}`);
+
+    if (urlError) {
+      setUploading(false);
+      alert(urlError.message);
+      return;
+    }
+
+    // Insert file metadata into Supabase table with verification status
+    const { error: dbError } = await supabase
+      .from('documents')
+      .insert([
+        {
+          file_name: file.name,
+          file_url: publicURL,
+          summary: projectSummary,
+          author_name: studentName,
+          upload_date: new Date().toISOString(), // Timestamp in ISO format
+          timestamp: new Date().toISOString(),   // Same as upload_date
+          verified: false, // Default to false for new uploads
+        },
+      ]);
+
+    if (dbError) {
+      setUploading(false);
+      alert(dbError.message);
+    } else {
+      alert('File uploaded successfully!');
+      setFile(null);
+      setProjectSummary('');
+      setStudentName('');
+    }
+
+    setUploading(false);
   };
 
   const handleLogoutClick = () => {
     setShowOverlay(true);
   };
 
-  const confirmLogout = () => {
-    setShowOverlay(false);
-    navigate('/signup'); 
+  const confirmLogout = async () => {
+    const { error } = await supabase.auth.signOut(); 
+
+    if (error) {
+      console.error('Error logging out:', error.message);
+    } else {
+      setShowOverlay(false);
+      navigate('/signup'); 
+    }
   };
 
   const cancelLogout = () => {
@@ -186,40 +236,33 @@ const UploadPage = () => {
         <div className="bg-white shadow-lg rounded-full w-11/12 max-w-md p-4 flex justify-around items-center">
           <button
             onClick={() => handleNavigation('/', 'home')}
-            className={`flex flex-col items-center ${
-              activeTab === 'home' ? 'text-purple-500 scale-110' : 'text-gray-600'
-            } transition-transform duration-200`}
+            className={`flex flex-col items-center ${activeTab === 'home' ? 'text-purple-500' : 'text-gray-500'}`}
           >
-            <FaHome size={activeTab === 'home' ? 28 : 24} />
+            <FaHome size={24} />
             <span className="text-sm">Home</span>
           </button>
           <button
             onClick={() => handleNavigation('/upload', 'upload')}
-            className={`flex flex-col items-center ${
-              activeTab === 'upload' ? 'text-purple-500 scale-110' : 'text-gray-600'
-            } transition-transform duration-200`}
+            className={`flex flex-col items-center ${activeTab === 'upload' ? 'text-purple-500' : 'text-gray-500'}`}
           >
-            <FaUpload size={activeTab === 'upload' ? 28 : 24} />
+            <FaUpload size={24} />
             <span className="text-sm">Upload</span>
           </button>
           <button
             onClick={handleLogoutClick}
-            className={`flex flex-col items-center ${
-              activeTab === 'logout' ? 'text-purple-500 scale-110' : 'text-gray-600'
-            } transition-transform duration-200`}
+            className="flex flex-col items-center text-gray-500"
           >
-            <FaSignOutAlt size={activeTab === 'logout' ? 28 : 24} />
+            <FaSignOutAlt size={24} />
             <span className="text-sm">Logout</span>
           </button>
         </div>
       </div>
 
-      {/* Logout Confirmation Overlay */}
-      {showOverlay && (
-        <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />
-      )}
+      {/* Overlay for Logout Confirmation */}
+      {showOverlay && <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />}
     </div>
   );
 };
 
 export default UploadPage;
+

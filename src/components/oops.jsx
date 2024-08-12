@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import Slider from 'react-slick';
 import { FaHome, FaUpload, FaSignOutAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import Loader from './div_loader'; 
 import { motion } from 'framer-motion';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-import Project from './project';
 import { supabase } from '../supabaseClient';
+import images from '../assets/renamed.jpg';
 
 const Overlay = ({ onConfirm, onCancel }) => (
   <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
@@ -31,31 +30,27 @@ const Overlay = ({ onConfirm, onCancel }) => (
   </div>
 );
 
-const HomePage = () => {
+const Oops = () => {
   const [activeTab, setActiveTab] = useState('home');
-  const [searchInput, setSearchInput] = useState('');
-  const [keywords, setKeywords] = useState([]);
-  const [loading, setLoading] = useState(true); // State to track loading
-  const [showOverlay, setShowOverlay] = useState(false); // State for overlay visibility
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [countdown, setCountdown] = useState(10); // Countdown state
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate a delay for fetching keywords
-    const fetchKeywords = () => {
-      setTimeout(() => {
-        setKeywords([
-          'Computer Science',
-          'Information Technology',
-          'Software Engineering',
-          'Cybersecurity',
-        ]);
-        setLoading(false);
-      }, 2000); // 2 seconds delay for demonstration
-    };
+    // Countdown timer logic
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(timer);
+          navigate('/login');
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    fetchKeywords();
-  }, []);
+    return () => clearInterval(timer);
+  }, [navigate]);
 
   const handleNavigation = (path, tabName) => {
     setActiveTab(tabName);
@@ -66,26 +61,18 @@ const HomePage = () => {
     navigate('/login');
   };
 
-  const handleSearch = () => {
-    console.log(`Searching for: ${searchInput}`);
-  };
-
-  const removeKeyword = (keyword) => {
-    setKeywords(keywords.filter((item) => item !== keyword));
-  };
-
   const handleLogoutClick = () => {
     setShowOverlay(true);
   };
 
   const confirmLogout = async () => {
-    const { error } = await supabase.auth.signOut(); 
+    const { error } = await supabase.auth.signOut();
 
     if (error) {
       console.error('Error logging out:', error.message);
     } else {
       setShowOverlay(false);
-      navigate('/signup'); 
+      navigate('/signup');
     }
   };
 
@@ -146,49 +133,21 @@ const HomePage = () => {
       </div>
 
       {/* Main content area with top padding */}
-      <div className="flex-grow pt-24 p-6">
-        <div className="flex justify-center mb-6">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search School of Technology..."
-            className="border border-gray-300 rounded-l-md px-4 py-2 w-full max-w-md focus:outline-none focus:border-purple-500"
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+        <div className="max-w-xs mx-auto">
+          <img
+            src={images} // Use your imported image here
+            alt="Unauthorized Access"
+            className="mb-8"
           />
-          <button
-            onClick={handleSearch}
-            className="bg-purple-500 text-white px-4 py-2 rounded-r-md hover:bg-purple-600 transition-colors duration-200"
-          >
-            Search
-          </button>
+          <p className="text-xl text-center text-gray-800 mb-4">
+            You are not authorized to access this page. Please log in.
+          </p>
+          <p className="text-center text-red-500 text-2xl font-bold">
+            Redirecting in {countdown}...
+          </p>
         </div>
-
-        {loading ? (
-          <Loader /> // Show loader while loading
-        ) : (
-          <div className="flex flex-wrap justify-center space-x-2 space-y-2">
-            {keywords.map((keyword, index) => (
-              <motion.div
-                key={index}
-                className="bg-purple-100 text-purple-900 px-4 py-2 rounded-md flex items-center space-x-1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <span>{keyword}</span>
-                <button
-                  onClick={() => removeKeyword(keyword)}
-                  className="text-purple-900 hover:text-red-500 transition-colors duration-200"
-                >
-                  &times;
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        )}
       </div>
-
-      <Project />
 
       {/* Centered Bottom Navigation Bar */}
       <div className="fixed inset-x-0 bottom-8 flex justify-center z-40">
@@ -231,4 +190,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default Oops;

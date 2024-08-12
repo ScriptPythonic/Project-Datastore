@@ -1,7 +1,7 @@
-// src/components/Signup.jsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Ensure this is correct
 import { supabase } from '../supabaseClient';
+import { Link } from 'react-router-dom';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +10,7 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // Ensure this is correct
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -18,6 +19,8 @@ const Signup = () => {
       return;
     }
     setLoading(true);
+    setError(null);
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -26,8 +29,17 @@ const Signup = () => {
         matric_number: matricNumber,
       },
     });
+
     setLoading(false);
-    if (error) setError(error.message);
+    if (error) {
+      setError(error.message);
+    } else {
+      setError(null);
+      alert('Successfully signed up. Please wait...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    }
   };
 
   return (

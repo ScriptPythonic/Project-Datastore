@@ -7,6 +7,8 @@ import Signup from './components/Signup';
 import HomePage from './components/Homepage';
 // import { ScatterBoxLoaderComponent } from './components/loader';
 import UploadPage from './components/upload';
+import ProtectedRoute from './components/Hooks/protectedroute';
+import Oops from './components/oops';
 
 const App = () => {
   const location = useLocation();
@@ -66,6 +68,19 @@ const App = () => {
               </motion.div>
             }
           />
+           <Route
+            path="/access-denied-please-login"
+            element={
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Oops />
+              </motion.div>
+            }
+          />
           <Route
             path="/upload"
             element={
@@ -75,10 +90,12 @@ const App = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
+                <ProtectedRoute />
                 <UploadPage />
               </motion.div>
             }
           />
+         
         </Routes>
       </AnimatePresence>
     </>

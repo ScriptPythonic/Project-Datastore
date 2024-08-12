@@ -19,11 +19,11 @@ const Login = () => {
     });
     setLoading(false);
     if (error) setError(error.message);
-    else navigate('/dashboard'); // Redirect to the dashboard on successful login
+    else navigate('/'); // Redirect to the dashboard on successful login
   };
 
   const handleBackToDashboard = () => {
-    navigate('/'); // Navigate to the dashboard route
+    navigate('/'); 
   };
 
   return (
