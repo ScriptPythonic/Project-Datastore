@@ -3,6 +3,7 @@ import { FaHome, FaUpload, FaSignOutAlt, FaFilePdf } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';
+import emailjs from 'emailjs-com';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import Project from './project'; 
@@ -89,13 +90,16 @@ const UploadPage = () => {
             file_url: data.publicUrl,
             verified: false,
             uploaded_at: currentDate,
-            date: currentDate, // Add this line to include the date
+            date: currentDate,
           },
         ]);
   
       if (dbError) {
         throw new Error(`Failed to save file data: ${dbError.message}`);
       }
+  
+      // Send email notification to user and admin
+      sendEmailNotification(data.publicUrl);
   
       alert('File uploaded successfully!');
       setFile(null);
@@ -106,6 +110,36 @@ const UploadPage = () => {
     } finally {
       setUploading(false);
     }
+  };
+
+  const sendEmailNotification = (fileUrl) => {
+    const userEmailParams = {
+      user_email: 'user@example.com', // Replace with the user's email
+      title: title,
+      description: description,
+      file_url: fileUrl,
+    };
+
+    const adminEmailParams = {
+      admin_email: 'admin@example.com', // Replace with the admin's email
+      title: title,
+      description: description,
+      file_url: fileUrl,
+    };
+
+    emailjs.send('your_service_id', 'user_template_id', userEmailParams, 'your_user_id')
+      .then((response) => {
+        console.log('User email sent successfully!', response.status, response.text);
+      }, (error) => {
+        console.error('Failed to send user email:', error);
+      });
+
+    emailjs.send('your_service_id', 'admin_template_id', adminEmailParams, 'your_user_id')
+      .then((response) => {
+        console.log('Admin email sent successfully!', response.status, response.text);
+      }, (error) => {
+        console.error('Failed to send admin email:', error);
+      });
   };
 
   const handleLogoutClick = () => {
@@ -217,47 +251,44 @@ const UploadPage = () => {
             />
             <button
               onClick={handleUpload}
-              className={`bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors duration-200 ${
-                uploading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className="bg-purple-900 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors duration-200 w-full"
               disabled={uploading}
             >
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
           </div>
         </div>
-        <Project />
       </div>
 
-      {/* Centered Bottom Navigation Bar */}
-      <div className="fixed inset-x-0 bottom-8 flex justify-center z-40">
-        <div className="bg-white shadow-lg rounded-full w-11/12 max-w-md p-4 flex justify-around items-center">
-          <button
-            onClick={() => handleNavigation('/', 'home')}
-            className={`flex flex-col items-center ${activeTab === 'home' ? 'text-purple-500' : 'text-gray-500'}`}
+      {/* Overlay for logout confirmation */}
+      {showOverlay && <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />}
+
+      {/* Footer with navigation icons */}
+      <div className="fixed bottom-0 left-0 right-0 bg-purple-900 text-white p-4">
+        <div className="flex justify-around">
+          <div
+            className={`flex flex-col items-center cursor-pointer ${activeTab === 'home' ? 'text-yellow-400' : ''}`}
+            onClick={() => handleNavigation('/student_dashboard', 'home')}
           >
             <FaHome size={24} />
             <span className="text-sm">Home</span>
-          </button>
-          <button
+          </div>
+          <div
+            className={`flex flex-col items-center cursor-pointer ${activeTab === 'upload' ? 'text-yellow-400' : ''}`}
             onClick={() => handleNavigation('/upload', 'upload')}
-            className={`flex flex-col items-center ${activeTab === 'upload' ? 'text-purple-500' : 'text-gray-500'}`}
           >
             <FaUpload size={24} />
             <span className="text-sm">Upload</span>
-          </button>
-          <button
+          </div>
+          <div
+            className="flex flex-col items-center cursor-pointer"
             onClick={handleLogoutClick}
-            className="flex flex-col items-center text-gray-500"
           >
             <FaSignOutAlt size={24} />
             <span className="text-sm">Logout</span>
-          </button>
+          </div>
         </div>
       </div>
-
-      {/* Overlay for Logout Confirmation */}
-      {showOverlay && <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />}
     </div>
   );
 };
