@@ -35,9 +35,9 @@ const UploadPage = () => {
   const [activeTab, setActiveTab] = useState('upload');
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false); // State for overlay visibility
-  const [projectSummary, setProjectSummary] = useState('');
-  const [studentName, setStudentName] = useState('');
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const navigate = useNavigate();
 
   const handleNavigation = (path, tabName) => {
@@ -50,64 +50,62 @@ const UploadPage = () => {
   };
 
   const handleUpload = async () => {
-    if (!file || !studentName || !projectSummary) {
+    if (!file || !title || !description) {
       alert('Please fill in all fields and select a file.');
       return;
     }
-
+  
     setUploading(true);
-
-    // Upload file to Supabase Storage
-    const { data: fileData, error: uploadError } = await supabase.storage
-      .from('scriptpythonic')
-      .upload(`uploads/${file.name}`, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
-
-    if (uploadError) {
-      setUploading(false);
-      alert(uploadError.message);
-      return;
-    }
-
-    // Get public URL of the uploaded file
-    const { publicURL, error: urlError } = supabase.storage
-      .from('your-bucket-name')
-      .getPublicUrl(`uploads/${file.name}`);
-
-    if (urlError) {
-      setUploading(false);
-      alert(urlError.message);
-      return;
-    }
-
-    // Insert file metadata into Supabase table with verification status
-    const { error: dbError } = await supabase
-      .from('documents')
-      .insert([
-        {
-          file_name: file.name,
-          file_url: publicURL,
-          summary: projectSummary,
-          author_name: studentName,
-          upload_date: new Date().toISOString(), // Timestamp in ISO format
-          timestamp: new Date().toISOString(),   // Same as upload_date
-          verified: false, // Default to false for new uploads
-        },
-      ]);
-
-    if (dbError) {
-      setUploading(false);
-      alert(dbError.message);
-    } else {
+  
+    try {
+      // Upload file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('scriptpythonic')
+        .upload(`uploads/${file.name}`, file);
+  
+      if (uploadError) {
+        throw new Error(`File upload failed: ${uploadError.message}`);
+      }
+  
+      // Get public URL of the uploaded file
+      const { data } = supabase.storage
+        .from('scriptpythonic')
+        .getPublicUrl(`uploads/${file.name}`);
+  
+      if (!data || !data.publicUrl) {
+        throw new Error('Failed to get public URL');
+      }
+  
+      // Get current date
+      const currentDate = new Date().toISOString();
+  
+      // Insert file metadata into Supabase table
+      const { error: dbError } = await supabase
+        .from('documents')
+        .insert([
+          {
+            title: title,
+            description: description,
+            file_url: data.publicUrl,
+            verified: false,
+            uploaded_at: currentDate,
+            date: currentDate, // Add this line to include the date
+          },
+        ]);
+  
+      if (dbError) {
+        throw new Error(`Failed to save file data: ${dbError.message}`);
+      }
+  
       alert('File uploaded successfully!');
       setFile(null);
-      setProjectSummary('');
-      setStudentName('');
+      setTitle('');
+      setDescription('');
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setUploading(false);
     }
-
-    setUploading(false);
   };
 
   const handleLogoutClick = () => {
@@ -198,22 +196,22 @@ const UploadPage = () => {
                 type="file"
                 id="doc"
                 name="doc"
-                accept="png, jpg, pdf"
+                accept=".docx,.pdf"
                 onChange={handleFileChange}
                 hidden
               />
             </label>
             <input
               type="text"
-              value={studentName}
-              onChange={(e) => setStudentName(e.target.value)}
-              placeholder="Student Name"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Title"
               className="border border-gray-300 rounded-md px-4 py-2 mb-4 w-full"
             />
             <textarea
-              value={projectSummary}
-              onChange={(e) => setProjectSummary(e.target.value)}
-              placeholder="Project Summary"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description"
               rows="4"
               className="border border-gray-300 rounded-md px-4 py-2 mb-4 w-full"
             />
@@ -265,4 +263,3 @@ const UploadPage = () => {
 };
 
 export default UploadPage;
-
