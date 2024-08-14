@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaHome, FaUpload, FaSignOutAlt, FaFilePdf } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
@@ -9,7 +9,6 @@ import "slick-carousel/slick/slick-theme.css";
 import Project from './project'; 
 import { supabase } from '../supabaseClient';
 
-// Overlay Component
 const Overlay = ({ onConfirm, onCancel }) => (
   <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
     <div className="bg-white p-6 rounded-lg shadow-lg text-center">
@@ -39,7 +38,20 @@ const UploadPage = () => {
   const [showOverlay, setShowOverlay] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email);
+      } else if (error) {
+        console.error('Failed to fetch user email:', error.message);
+      }
+    };
+    fetchUserEmail();
+  }, []);
 
   const handleNavigation = (path, tabName) => {
     setActiveTab(tabName);
@@ -59,7 +71,6 @@ const UploadPage = () => {
     setUploading(true);
   
     try {
-      // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('scriptpythonic')
         .upload(`uploads/${file.name}`, file);
@@ -68,7 +79,6 @@ const UploadPage = () => {
         throw new Error(`File upload failed: ${uploadError.message}`);
       }
   
-      // Get public URL of the uploaded file
       const { data } = supabase.storage
         .from('scriptpythonic')
         .getPublicUrl(`uploads/${file.name}`);
@@ -77,10 +87,8 @@ const UploadPage = () => {
         throw new Error('Failed to get public URL');
       }
   
-      // Get current date
       const currentDate = new Date().toISOString();
   
-      // Insert file metadata into Supabase table
       const { error: dbError } = await supabase
         .from('documents')
         .insert([
@@ -98,8 +106,7 @@ const UploadPage = () => {
         throw new Error(`Failed to save file data: ${dbError.message}`);
       }
   
-      // Send email notification to user and admin
-      sendEmailNotification(data.publicUrl);
+      sendEmailNotification(data.publicUrl, userEmail);
   
       alert('File uploaded successfully!');
       setFile(null);
@@ -112,16 +119,16 @@ const UploadPage = () => {
     }
   };
 
-  const sendEmailNotification = (fileUrl) => {
+  const sendEmailNotification = (fileUrl, userEmail) => {
     const userEmailParams = {
-      user_email: 'user@example.com', // Replace with the user's email
+      user_email: userEmail, // Use fetched user email
       title: title,
       description: description,
       file_url: fileUrl,
     };
 
     const adminEmailParams = {
-      admin_email: 'admin@example.com', // Replace with the admin's email
+      admin_email: 'admin@example.com', // Replace with the actual admin email
       title: title,
       description: description,
       file_url: fileUrl,
@@ -171,7 +178,6 @@ const UploadPage = () => {
     autoplaySpeed: 3000,
     arrows: false
   };
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Fixed Swiper Top Information Bar */}
