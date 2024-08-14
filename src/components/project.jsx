@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaFilePdf } from 'react-icons/fa';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const Loader = () => {
   return (
@@ -34,7 +36,7 @@ const Project = () => {
 
   useEffect(() => {
     // Simulate data fetching
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setProjects([
         {
           title: 'IFS Journaling Implementation',
@@ -59,7 +61,9 @@ const Project = () => {
         }
       ]);
       setLoadingProjects(false);
-    }, 2000);
+    }, 10000); 
+
+    return () => clearTimeout(timer); // Cleanup timer on component unmount
   }, []);
 
   const containerVariants = {
@@ -86,8 +90,25 @@ const Project = () => {
     <div className="max-w-4xl mx-auto p-4">
       <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">Recent IFS Project Uploads</h2>
       {loadingProjects ? (
-        <div className="flex items-center justify-center h-80">
-          <Loader />
+        <div className="space-y-6">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <Skeleton circle width={48} height={48} />
+                  <div className="ml-4 flex-1">
+                    <Skeleton width="60%" height={24} />
+                    <Skeleton width="80%" height={16} />
+                  </div>
+                </div>
+                <Skeleton count={3} />
+                <Skeleton width="40%" height={20} className="mt-4" />
+              </div>
+              <div className="bg-gray-100 px-6 py-4">
+                <Skeleton width="30%" height={24} />
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <motion.div
