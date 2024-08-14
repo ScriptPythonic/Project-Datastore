@@ -178,9 +178,9 @@ const UploadPage = () => {
     autoplaySpeed: 3000,
     arrows: false
   };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Fixed Swiper Top Information Bar */}
       <div className="fixed top-0 left-0 right-0 bg-purple-900 text-white shadow-md z-40">
         <Slider {...settings}>
           <div className="p-4">
@@ -219,7 +219,6 @@ const UploadPage = () => {
         </Slider>
       </div>
 
-      {/* Main content area with top padding */}
       <div className="flex-grow pt-24 p-6">
         <div className="flex flex-col items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -266,35 +265,46 @@ const UploadPage = () => {
         </div>
       </div>
 
-      {/* Overlay for logout confirmation */}
+      <Project />
+
       {showOverlay && <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />}
 
-      {/* Footer with navigation icons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-purple-900 text-white p-4">
-        <div className="flex justify-around">
-          <div
-            className={`flex flex-col items-center cursor-pointer ${activeTab === 'home' ? 'text-yellow-400' : ''}`}
-            onClick={() => handleNavigation('/student_dashboard', 'home')}
+      <div className="fixed inset-x-0 bottom-8 flex justify-center z-40">
+        <div className="bg-white shadow-lg rounded-full w-11/12 max-w-md p-4 flex justify-around items-center">
+          <button
+            onClick={() => handleNavigation('/', 'home')}
+            className={`flex flex-col items-center ${
+              activeTab === 'home' ? 'text-purple-500 scale-110' : 'text-gray-600'
+            } transition-transform duration-200`}
           >
-            <FaHome size={24} />
+            <FaHome size={activeTab === 'home' ? 28 : 24} />
             <span className="text-sm">Home</span>
-          </div>
-          <div
-            className={`flex flex-col items-center cursor-pointer ${activeTab === 'upload' ? 'text-yellow-400' : ''}`}
+          </button>
+          <button
             onClick={() => handleNavigation('/upload', 'upload')}
+            className={`flex flex-col items-center ${
+              activeTab === 'upload' ? 'text-purple-500 scale-110' : 'text-gray-600'
+            } transition-transform duration-200`}
           >
-            <FaUpload size={24} />
+            <FaUpload size={activeTab === 'upload' ? 28 : 24} />
             <span className="text-sm">Upload</span>
-          </div>
-          <div
-            className="flex flex-col items-center cursor-pointer"
+          </button>
+          <button
             onClick={handleLogoutClick}
+            className={`flex flex-col items-center ${
+              activeTab === 'logout' ? 'text-purple-500 scale-110' : 'text-gray-600'
+            } transition-transform duration-200`}
           >
-            <FaSignOutAlt size={24} />
+            <FaSignOutAlt size={activeTab === 'logout' ? 28 : 24} />
             <span className="text-sm">Logout</span>
-          </div>
+          </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Overlay */}
+      {showOverlay && (
+        <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />
+      )}
     </div>
   );
 };
