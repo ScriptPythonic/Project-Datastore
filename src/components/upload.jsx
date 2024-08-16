@@ -134,14 +134,14 @@ const UploadPage = () => {
       file_url: fileUrl,
     };
 
-    emailjs.send('your_service_id', 'user_template_id', userEmailParams, 'your_user_id')
+    emailjs.send('service_kcmg1wm', 'template_wsi3xai', userEmailParams, '2oVADlKKoXdBWOunA')
       .then((response) => {
         console.log('User email sent successfully!', response.status, response.text);
       }, (error) => {
         console.error('Failed to send user email:', error);
       });
 
-    emailjs.send('your_service_id', 'admin_template_id', adminEmailParams, 'your_user_id')
+    emailjs.send('service_kcmg1wm', 'template_prlrri9', adminEmailParams, '2oVADlKKoXdBWOunA')
       .then((response) => {
         console.log('Admin email sent successfully!', response.status, response.text);
       }, (error) => {
