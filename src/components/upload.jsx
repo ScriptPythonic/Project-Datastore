@@ -46,6 +46,7 @@ const UploadPage = () => {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email);
+        console.log('User Email:', user.email);  // Console log the email
       } else if (error) {
         console.error('Failed to fetch user email:', error.message);
       }
@@ -128,20 +129,20 @@ const UploadPage = () => {
     };
 
     const adminEmailParams = {
-      admin_email: 'admin@example.com', // Replace with the actual admin email
+      admin_email: 'Bolu4ball@gmail.com', 
       title: title,
       description: description,
       file_url: fileUrl,
     };
 
-    emailjs.send('service_kcmg1wm', 'template_wsi3xai', userEmailParams, '2oVADlKKoXdBWOunA')
+    emailjs.send('service_48yxtlh', 'template_wsi3xai', userEmailParams, '2oVADlKKoXdBWOunA')
       .then((response) => {
         console.log('User email sent successfully!', response.status, response.text);
       }, (error) => {
         console.error('Failed to send user email:', error);
       });
 
-    emailjs.send('service_kcmg1wm', 'template_prlrri9', adminEmailParams, '2oVADlKKoXdBWOunA')
+    emailjs.send('service_48yxtlh', 'template_prlrri9', adminEmailParams, '2oVADlKKoXdBWOunA')
       .then((response) => {
         console.log('Admin email sent successfully!', response.status, response.text);
       }, (error) => {
