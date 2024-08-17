@@ -1,13 +1,16 @@
+// src/components/ProjectDetail.js
+import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import Slider from 'react-slick';
-import { FaHome, FaUpload, FaSignOutAlt, FaFilePdf } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import Loader from './div_loader'; 
-import { motion } from 'framer-motion';
-import "slick-carousel/slick/slick.css"; 
-import "slick-carousel/slick/slick-theme.css";
 import { supabase } from '../supabaseClient';
-import Project from './project'
+import { FaHome, FaUpload, FaSignOutAlt } from 'react-icons/fa';
+import { FaFilePdf } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import { useNavigate } from 'react-router-dom';
+
+
 
 const Overlay = ({ onConfirm, onCancel }) => (
   <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
@@ -31,72 +34,46 @@ const Overlay = ({ onConfirm, onCancel }) => (
   </div>
 );
 
-const HomePage = () => {
-  const [activeTab, setActiveTab] = useState('home');
-  const [searchInput, setSearchInput] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+
+
+
+
+const ProjectDetail = () => {
+  const { id } = useParams();
+  const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showOverlay, setShowOverlay] = useState(false);
+  const [activeTab, setActiveTab] = useState('home');
+  const [showOverlay, setShowOverlay] = useState(false); 
+  const navigate = useNavigate()
 
-  const navigate = useNavigate();
+    const handleNavigation = (path, tabName) => {
+        setActiveTab(tabName);
+        navigate(path);
+      };
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+      const handleSignIn = () => {
+        navigate('/login');
+      };
 
-  const handleNavigation = (path, tabName) => {
-    setActiveTab(tabName);
-    navigate(path);
-  };
-
-  const handleSignIn = () => {
-    navigate('/login');
-  };
-
-  const handleSearch = async () => {
-    if (!searchInput.trim()) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase
-        .from('documents')
-        .select('*')
-        .or(`title.ilike.%${searchInput}%,description.ilike.%${searchInput}%`);
-
-      if (error) {
-        console.error('Error searching projects:', error.message);
-      } else {
-        setSearchResults(data);
-        console.log('Search Results:', data);
-      }
-    } catch (error) {
-      console.error('Unexpected error during search:', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogoutClick = () => {
-    setShowOverlay(true);
-  };
-
-  const confirmLogout = async () => {
-    const { error } = await supabase.auth.signOut(); 
-
-    if (error) {
-      console.error('Error logging out:', error.message);
-    } else {
-      setShowOverlay(false);
-      navigate('/signup'); 
-    }
-  };
-
-  const cancelLogout = () => {
-    setShowOverlay(false);
-  };
+      const handleLogoutClick = () => {
+        setShowOverlay(true);
+      };
+    
+      const confirmLogout = async () => {
+        const { error } = await supabase.auth.signOut(); 
+    
+        if (error) {
+          console.error('Error logging out:', error.message);
+        } else {
+          setShowOverlay(false);
+          navigate('/signup'); 
+        }
+      };
+    
+      const cancelLogout = () => {
+        setShowOverlay(false);
+      };
+    
 
   const settings = {
     dots: false,
@@ -109,8 +86,31 @@ const HomePage = () => {
     arrows: false
   };
 
+  useEffect(() => {
+    const fetchProjectDetail = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching project detail:', error);
+      } else {
+        setProject(data);
+      }
+      setLoading(false);
+    };
+
+    fetchProjectDetail();
+  }, [id]);
+
+  if (loading) return <div className="text-center text-gray-600">Loading...</div>;
+  if (!project) return <div className="text-center text-gray-600">Project not found</div>;
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <>
       <div className="fixed top-0 left-0 right-0 bg-purple-900 text-white shadow-md z-40">
         <Slider {...settings}>
           <div className="p-4">
@@ -148,57 +148,40 @@ const HomePage = () => {
           </div>
         </Slider>
       </div>
-
-      <div className="flex-grow pt-24 p-6">
-        <div className="flex justify-center mb-6">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search School of Technology..."
-            className="border border-gray-300 rounded-l-md px-4 py-2 w-full max-w-md focus:outline-none focus:border-purple-500"
-          />
-          <button
-            onClick={handleSearch}
-            className="bg-purple-500 text-white px-4 py-2 rounded-r-md hover:bg-purple-600 transition-colors duration-200"
-          >
-            Search
-          </button>
-        </div>
-
-        {loading ? (
-          <Loader />
-        ) : searchResults.length > 0 ? (
-          <div className="space-y-4">
-            {searchResults.map((project) => (
-              <div key={project.id} className="bg-white rounded-lg shadow-md p-4 max-w-md mx-auto">
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <FaFilePdf className="text-red-500 text-3xl mr-4" />
-                    <h3 className="text-2xl font-semibold text-gray-800">{project.title}</h3>
-                  </div>
-                  <p className="text-gray-600 mb-4 line-clamp-3">{project.description || project.summary}</p>
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <p><span className="font-medium">Date:</span> {project.date}</p>
-                    <p><span className="font-medium">Time:</span> {project.time || project.uploaded_at}</p>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/project/${project.id}`)}
-                    className="text-purple-600 hover:text-purple-800 font-medium mt-4"
-                  >
-                    View Details
-                  </button>
+      <div className="max-w-4xl mx-auto p-4 mt-20">
+        <h2 className="text-4xl font-bold mb-8 text-center text-gray-800">Project Details</h2>
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="p-6">
+            <div className="flex items-center mb-6">
+              <FaFilePdf className="text-red-500 text-4xl mr-4" />
+              <div>
+                <h3 className="text-3xl font-semibold text-gray-800 mb-2">{project.title}</h3>
+                <p className="text-gray-600 mb-4">{project.description}</p>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <p><span className="font-medium">Date:</span> {project.date}</p>
+                  <p><span className="font-medium">Uploaded At:</span> {project.uploaded_at}</p>
                 </div>
               </div>
-            ))}
+            </div>
+            <div className="bg-gray-100 px-6 py-4">
+              {project.file_url ? (
+                <motion.a
+                  href={project.file_url}
+                  download
+                  className="text-blue-600 hover:text-blue-800 font-medium text-lg"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  Download PDF
+                </motion.a>
+              ) : (
+                <p className="text-gray-600">No PDF available for download</p>
+              )}
+            </div>
           </div>
-        ) : (
-          <div className="text-center text-gray-500">No projects found</div>
-        )}
-      </div>
-
-      {searchResults.length === 0 && <Project />}
-
+        </div>
+        
+         {/* Centered Bottom Navigation Bar */}
       <div className="fixed inset-x-0 bottom-8 flex justify-center z-40">
         <div className="bg-white shadow-lg rounded-full w-11/12 max-w-md p-4 flex justify-around items-center">
           <button
@@ -231,11 +214,13 @@ const HomePage = () => {
         </div>
       </div>
 
+      {/* Logout Confirmation Overlay */}
       {showOverlay && (
         <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
-export default HomePage;
+export default ProjectDetail;

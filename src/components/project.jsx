@@ -1,11 +1,12 @@
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaFilePdf } from 'react-icons/fa';
+import { FaFilePdf, FaExternalLinkAlt } from 'react-icons/fa';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { supabase } from '../supabaseClient';
 
-const ITEMS_PER_PAGE = 5; 
+const ITEMS_PER_PAGE = 5;
 
 const Project = () => {
   const [projects, setProjects] = useState([]);
@@ -15,6 +16,7 @@ const Project = () => {
 
   const staticExamples = [
     {
+      id: 'static1',
       title: 'IFS Journaling Implementation',
       summary: 'A detailed proposal for implementing journaling in IFS to improve data integrity and recovery.',
       date: '2024-08-01',
@@ -23,6 +25,7 @@ const Project = () => {
       verified: true,
     },
     {
+      id: 'static2',
       title: 'IFS Compression Algorithms',
       summary: 'Analysis and comparison of various compression algorithms for optimizing storage in IFS.',
       date: '2024-08-05',
@@ -31,6 +34,7 @@ const Project = () => {
       verified: false,
     },
     {
+      id: 'static3',
       title: 'IFS Access Control List (ACL) Design',
       summary: 'Comprehensive design for implementing fine-grained access control lists in IFS.',
       date: '2024-08-10',
@@ -41,38 +45,48 @@ const Project = () => {
   ];
 
   useEffect(() => {
-    // Fetch projects from Supabase where verified is TRUE
     const fetchProjects = async () => {
       setLoadingProjects(true);
-      const { data, count, error } = await supabase
-        .from('documents')
-        .select('*', { count: 'exact' })
-        .eq('verified', true) // Filter to only include verified projects
-        .order('uploaded_at', { ascending: false })
-        .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
+      try {
+        const { data, count, error } = await supabase
+          .from('documents')
+          .select('*', { count: 'exact' })
+          .eq('verified', true)
+          .order('uploaded_at', { ascending: false })
+          .range((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE - 1);
 
-      if (error) {
-        console.error('Error fetching projects:', error);
-      } else {
+        if (error) {
+          console.error('Error fetching projects:', error.message);
+          return;
+        }
+
+        if (!data) {
+          console.warn('No data returned from Supabase');
+          return;
+        }
+
+        // Log the fetched data for inspection
+        console.log('Fetched projects:', data);
+        console.log('Total Count:', count);
+
         setProjects(data);
         setTotalPages(Math.ceil(count / ITEMS_PER_PAGE));
+      } catch (error) {
+        console.error('Unexpected error:', error.message);
+      } finally {
+        setLoadingProjects(false);
       }
-      setLoadingProjects(false);
     };
 
     fetchProjects();
   }, [page]);
 
   const handleNextPage = () => {
-    if (page < totalPages) {
-      setPage(page + 1);
-    }
+    if (page < totalPages) setPage(page + 1);
   };
 
   const handlePreviousPage = () => {
-    if (page > 1) {
-      setPage(page - 1);
-    }
+    if (page > 1) setPage(page - 1);
   };
 
   const containerVariants = {
@@ -95,42 +109,11 @@ const Project = () => {
     }
   };
 
+  const combinedProjects = [...staticExamples, ...projects];
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">Recent IFS Project Uploads</h2>
-      
-      {/* Display static examples */}
-      <motion.div
-        className="space-y-6"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {staticExamples
-          .filter(example => example.verified) // Only display verified static examples
-          .map((example, index) => (
-            <motion.div
-              key={index}
-              className="bg-white rounded-xl shadow-lg overflow-hidden"
-              variants={itemVariants}
-            >
-              <div className="p-6">
-                <div className="flex items-center mb-4">
-                  <FaFilePdf className="text-red-500 text-3xl mr-4" />
-                  <h3 className="text-2xl font-semibold text-gray-800">{example.title}</h3>
-                </div>
-                <p className="text-gray-600 mb-4">{example.summary}</p>
-                <div className="flex justify-between text-sm text-gray-500">
-                  <p><span className="font-medium">Date:</span> {example.date}</p>
-                  <p><span className="font-medium">Time:</span> {example.time}</p>
-                </div>
-              </div>
-              <div className="bg-gray-100 px-6 py-4">
-                <button className="text-blue-600 hover:text-blue-800 font-medium">View Details</button>
-              </div>
-            </motion.div>
-          ))}
-      </motion.div>
 
       {loadingProjects ? (
         <div className="space-y-6 mt-6">
@@ -160,25 +143,34 @@ const Project = () => {
           initial="hidden"
           animate="visible"
         >
-          {projects.map((project, index) => (
+          {combinedProjects.map((project) => (
             <motion.div
-              key={index}
-              className="bg-white rounded-xl shadow-lg overflow-hidden"
+              key={project.id}
+              className="bg-white rounded-xl shadow-lg overflow-hidden relative"
               variants={itemVariants}
             >
+              <div className="absolute top-4 right-4">
+                {project.file_url ? (
+                  <Link to={`/project/${project.id}`}>
+                    <FaExternalLinkAlt className="text-blue-600 text-xl hover:text-blue-800" />
+                  </Link>
+                ) : (
+                  <FaExternalLinkAlt
+                    className="text-blue-600 text-xl hover:text-blue-800 cursor-pointer"
+                    onClick={() => console.log('Static project icon clicked')}
+                  />
+                )}
+              </div>
               <div className="p-6">
                 <div className="flex items-center mb-4">
                   <FaFilePdf className="text-red-500 text-3xl mr-4" />
                   <h3 className="text-2xl font-semibold text-gray-800">{project.title}</h3>
                 </div>
-                <p className="text-gray-600 mb-4 line-clamp-3">{project.description}</p>
+                <p className="text-gray-600 mb-4 line-clamp-3">{project.description || project.summary}</p>
                 <div className="flex justify-between text-sm text-gray-500">
                   <p><span className="font-medium">Date:</span> {project.date}</p>
-                  <p><span className="font-medium">Time:</span> {project.uploaded_at}</p>
+                  <p><span className="font-medium">Time:</span> {project.time || project.uploaded_at}</p>
                 </div>
-              </div>
-              <div className="bg-gray-100 px-6 py-4">
-                <button className="text-blue-600 hover:text-blue-800 font-medium">View Details</button>
               </div>
             </motion.div>
           ))}

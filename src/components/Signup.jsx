@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom'; // Ensure this is correct
 import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ const Signup = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); 
+
   const handleSignup = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
