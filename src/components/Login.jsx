@@ -33,7 +33,7 @@ const Login = () => {
         {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label htmlFor="matricNumber" className="block text-sm font-medium text-gray-700">Matric Number</label>
+            <label htmlFor="matricNumber" className="block text-sm font-medium text-gray-700">E-Mail</label>
             <input
               type="text"
               id="matricNumber"
