@@ -249,12 +249,12 @@ const UploadPage = () => {
               className="border border-gray-300 rounded-md px-4 py-2 mb-4 w-full"
             />
             <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description"
-              rows="4"
-              className="border border-gray-300 rounded-md px-4 py-2 mb-4 w-full"
-            />
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={`SuperVisor Name\nYear\nYour Name\n""""\nContent.....\n""""`}
+                rows="6"
+                className="border border-gray-300 rounded-md px-4 py-2 mb-4 w-full"
+              />
             <button
               onClick={handleUpload}
               className="bg-purple-900 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors duration-200 w-full"
