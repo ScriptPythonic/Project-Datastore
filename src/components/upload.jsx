@@ -232,7 +232,7 @@ const UploadPage = () => {
               <FaFilePdf />
               <div className="space-y-2">
                 <h4 className="text-base font-semibold text-gray-700">Upload a file</h4>
-                <span className="text-sm text-gray-500">Max 2 MB</span>
+                <span className="text-sm text-gray-500">Max 20 MB</span>
               </div>
               <input
                 type="file"
