@@ -64,7 +64,7 @@ const UploadPage = () => {
   };
 
   const handleUpload = async () => {
-    if (!file || !title || !description) {
+    if (!file || !title || !description || !userEmail) {
       alert('Please fill in all fields and select a file.');
       return;
     }
@@ -182,6 +182,7 @@ const UploadPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
+      {/* Top Slider */}
       <div className="fixed top-0 left-0 right-0 bg-purple-900 text-white shadow-md z-40">
         <Slider {...settings}>
           <div className="p-4">
@@ -220,6 +221,7 @@ const UploadPage = () => {
         </Slider>
       </div>
 
+      {/* Main Upload Section */}
       <div className="flex-grow pt-24 p-6">
         <div className="flex flex-col items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -251,14 +253,21 @@ const UploadPage = () => {
             <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={`SuperVisor Name\nYear\nYour Name\n""""\nContent.....\n""""`}
+                placeholder={`Name\nMatric No\nYear\nSupervisor's Name\n\nProject Abstract`}
                 rows="6"
-                className="border border-gray-300 rounded-md px-4 py-2 mb-4 w-full"
+                className="border border-gray-300 rounded-md px-4 py-2 mb-4 text-sm w-full"
               />
+            {/* Email Input */}
+            <input
+              type="email"
+              value={userEmail}
+              readOnly
+              className="border border-gray-300 rounded-md px-4 py-2 mb-4 w-full bg-gray-100 cursor-not-allowed"
+            />
             <button
               onClick={handleUpload}
-              className="bg-purple-900 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors duration-200 w-full"
               disabled={uploading}
+              className="bg-purple-600 text-white w-full py-2 rounded-md hover:bg-purple-700 transition-colors duration-200"
             >
               {uploading ? 'Uploading...' : 'Upload'}
             </button>
@@ -268,8 +277,10 @@ const UploadPage = () => {
 
       <Project />
 
+      {/* Overlay for Logout Confirmation */}
       {showOverlay && <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />}
 
+      {/* Bottom Navigation */}
       <div className="fixed inset-x-0 bottom-8 flex justify-center z-40">
         <div className="bg-white shadow-lg rounded-full w-11/12 max-w-md p-4 flex justify-around items-center">
           <button
@@ -301,11 +312,6 @@ const UploadPage = () => {
           </button>
         </div>
       </div>
-
-      {/* Logout Confirmation Overlay */}
-      {showOverlay && (
-        <Overlay onConfirm={confirmLogout} onCancel={cancelLogout} />
-      )}
     </div>
   );
 };
